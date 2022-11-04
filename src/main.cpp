@@ -47,6 +47,7 @@ MAKE_HOOK_MATCH(ComboUIController_HandleComboDidChange, &ComboUIController::Hand
 // reload combo count
 MAKE_HOOK_MATCH(ComboUIController_OnEnable, &ComboUIController::OnEnable, void, GlobalNamespace::ComboUIController* self) {
     ComboUIController_OnEnable(self);
+    // this should reload the combo but it does not seem to 
     UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::ComboUIController*>().First()->HandleComboDidChange(combo_count);
 }
 
