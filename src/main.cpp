@@ -1,17 +1,17 @@
 #include "main.hpp"
-
 #include "questui/shared/QuestUI.hpp"
 #include "questui/shared/BeatSaberUI.hpp"
 #include "GlobalNamespace/BeatmapObjectManager.hpp"
 #include "GlobalNamespace/ComboController.hpp"
 #include "GlobalNamespace/ComboUIController.hpp"
+#include "GlobalNamespace/MissedNoteEffectSpawner.hpp"
 
 
 static ModInfo modInfo; // Stores the ID and version of our mod, and is sent to the modloader upon startup
 using namespace GlobalNamespace;
 using namespace UnityEngine;
 
-float combo;
+int combo_count, prev_combo;
 TMPro::TextMeshProUGUI *Session_combo;
 
 
@@ -23,33 +23,27 @@ Configuration& getConfig() {
     return config;
 }
 
-MAKE_HOOK_MATCH(Cut_note_hook, &ComboController::HandleNoteWasCut,void, ComboController* self, NoteController* noteController, ByRef<NoteCutInfo> info) {
-    Cut_note_hook(self, noteController, info);
-    combo += 1;
-    Session_combo->SetText(std::to_string(combo));
+MAKE_HOOK_MATCH(ComboController_HandleNoteWasCut, &ComboController::HandleNoteWasCut, void, ComboController* self, NoteController *noteController, ByRef<NoteCutInfo> info) {
+    ComboController_HandleNoteWasCut(self, noteController,info);
+    combo_count += 1;
+    // figure out how to check if this is a good cut. if it is good cut +1 if it is bad cut set 0
+    UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::ComboUIController*>().First()->HandleComboDidChange(combo_count);
     }
 
 
-MAKE_HOOK_MATCH(Miss_note_hook, &ComboController::HandleNoteWasMissed,void, ComboController* self, NoteController* noteController) {
-    Miss_note_hook(self, noteController);
-    combo = 0;
-    Session_combo->SetText(std::to_string(combo));
-    }
+MAKE_HOOK_MATCH(ComboUIController_HandleComboBreakingEventHappened, &GlobalNamespace::ComboUIController::HandleComboBreakingEventHappened, void, GlobalNamespace::ComboUIController* self) {
+    ComboUIController_HandleComboBreakingEventHappened(self);
+    combo_count = 0;
+    UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::ComboUIController*>().First()->HandleComboDidChange(combo_count);
+}
 
-MAKE_HOOK_MATCH(Player_head_wall, &ComboController::HandlePlayerHeadDidEnterObstacles,void, ComboController* self) {
-    Player_head_wall(self);
-    combo = 0;
-    Session_combo->SetText(std::to_string(combo));
-    }
+MAKE_HOOK_MATCH(ComboUIController_HandleComboDidChange, &ComboUIController::HandleComboDidChange, void, ComboUIController *self, int combo) {
+    ComboUIController_HandleComboDidChange(self, combo_count);
+}
 
-MAKE_HOOK_MATCH(UI, &ComboUIController::Start, void, ComboUIController *self){
-auto counter_location = self->get_transform()->get_position();
-
-getLogger().info("creating canvas");
-UnityEngine::GameObject *Canvas = QuestUI::BeatSaberUI::CreateCanvas();
-getLogger().info("setting canvas position");
-Canvas-> get_transform()->set_position(UnityEngine::Vector3(counter_location + UnityEngine::Vector3(0.0f, -1.0f,0.0f)));
-Session_combo = QuestUI::BeatSaberUI::CreateText(Canvas->get_transform(),"0");
+MAKE_HOOK_MATCH(ComboUIController_OnEnable, &ComboUIController::OnEnable, void, GlobalNamespace::ComboUIController* self) {
+    ComboUIController_OnEnable(self);
+    UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::ComboUIController*>().First()->HandleComboDidChange(combo_count);
 }
 
 
@@ -75,7 +69,11 @@ extern "C" void load() {
 
     getLogger().info("Installing hooks...");
 
-        INSTALL_HOOK(getLogger(), Cut_note_hook);
+    INSTALL_HOOK(getLogger(), ComboController_HandleNoteWasCut);
+    INSTALL_HOOK(getLogger(), ComboUIController_HandleComboBreakingEventHappened);
+    INSTALL_HOOK(getLogger(), ComboUIController_HandleComboDidChange);
+    INSTALL_HOOK(getLogger(), MainMenuViewController_DidActivate);
 
     getLogger().info("Installed all hooks!");
+
 }
