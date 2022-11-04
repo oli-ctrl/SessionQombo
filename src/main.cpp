@@ -39,8 +39,12 @@ MAKE_HOOK_MATCH(ComboUIController_HandleComboBreakingEventHappened, &GlobalNames
 
 MAKE_HOOK_MATCH(ComboUIController_HandleComboDidChange, &ComboUIController::HandleComboDidChange, void, ComboUIController *self, int combo) {
     ComboUIController_HandleComboDidChange(self, combo_count);
+    // somehow change the "combo" text to "session combo"
+    // may be in a different hook
 }
 
+
+// reload combo count
 MAKE_HOOK_MATCH(ComboUIController_OnEnable, &ComboUIController::OnEnable, void, GlobalNamespace::ComboUIController* self) {
     ComboUIController_OnEnable(self);
     UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::ComboUIController*>().First()->HandleComboDidChange(combo_count);
