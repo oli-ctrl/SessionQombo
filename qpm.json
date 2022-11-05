@@ -2,12 +2,12 @@
   "sharedDir": "shared",
   "dependenciesDir": "extern",
   "info": {
-    "name": "Combo Keeper",
-    "id": "Combo_Keeper",
+    "name": "SessionQombo",
+    "id": "SessionQombo",
     "version": "0.1.0",
     "url": null,
     "additionalData": {
-      "overrideSoName": "libCombo_Keeper.so"
+      "overrideSoName": "libSessionQombo.so"
     }
   },
   "dependencies": [
