@@ -2,7 +2,7 @@
   "configurations": [
     {
       "defines": [
-        "MOD_ID=\"Combo_Keeper\"",
+        "MOD_ID=\"SessionQombo\"",
         "VERSION=\"0.1.0\"",
         "__GNUC__",
         "__aarch64__"
