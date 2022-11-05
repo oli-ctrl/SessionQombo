@@ -12,8 +12,9 @@ static ModInfo modInfo; // Stores the ID and version of our mod, and is sent to 
 using namespace GlobalNamespace;
 using namespace UnityEngine;
 
-int combo_count, prev_combo;
-TMPro::TextMeshProUGUI *Session_combo;
+int combo_count;
+
+//TMPro::TextMeshProUGUI *Session_combo;
 
 
 
@@ -26,34 +27,33 @@ Configuration& getConfig() {
 
 
 MAKE_HOOK_MATCH(ComboUIController_HandleComboDidChange, &ComboUIController::HandleComboDidChange, void, ComboUIController *self, int combo) {
+    // handles combo changing and sets the value to the combo count
     ComboUIController_HandleComboDidChange(self, combo_count);
 
 
-    //auto combo_text = QuestUI::ArrayUtil::Last(GameObject::FindObjectsOfType<TMPro::TextMeshProUGUI*>(), [](TMPro::TextMeshProUGUI* text){return text->get_name() == "ComboText";});
-    //combo_text->SetText("Session Combo");
 }
 
 MAKE_HOOK_MATCH(ComboUIController_HandleComboBreakingEventHappened, &GlobalNamespace::ComboUIController::HandleComboBreakingEventHappened, void, GlobalNamespace::ComboUIController* self) {
     ComboUIController_HandleComboBreakingEventHappened(self);
+    // handles breaking events
     combo_count = 0;
     UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::ComboUIController*>().First()->HandleComboDidChange(combo_count);
 }
 
 MAKE_HOOK_MATCH(ComboController_HandleNoteWasCut, &ComboController::HandleNoteWasCut, void, ComboController* self, NoteController *noteController, ByRef<NoteCutInfo> info) {
     ComboController_HandleNoteWasCut(self, noteController,info);
+    // check that the cut was a good cut, if it is good +1 if bad lets the combo breaking event yeet the combo
     if (info ->get_allIsOK()){
         combo_count += 1;
-    }
-    else{
-        combo_count = 0;
     }
     UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::ComboUIController*>().First()->HandleComboDidChange(combo_count);
     }
 
 MAKE_HOOK_MATCH(ComboUIController_Start, &ComboUIController::Start, void, GlobalNamespace::ComboUIController* self) {
     ComboUIController_Start(self);
-    // this should reload the combo but it does not seem to 
+    // set the combo number value
     self->comboText->SetText(std::to_string(combo_count));
+    // change the combo text
     auto combo_text = QuestUI::ArrayUtil::Last(GameObject::FindObjectsOfType<TMPro::TextMeshProUGUI*>(), [](TMPro::TextMeshProUGUI* text){return text->get_name() == "ComboText";});
     combo_text->SetText("Session Combo");
 }
