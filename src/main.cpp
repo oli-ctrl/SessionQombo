@@ -4,8 +4,7 @@
 #include "GlobalNamespace/BeatmapObjectManager.hpp"
 #include "GlobalNamespace/ComboController.hpp"
 #include "GlobalNamespace/ComboUIController.hpp"
-#include "GlobalNamespace/MissedNoteEffectSpawner.hpp"
-
+#include "GlobalNamespace/NoteCutInfo.hpp"
 
 static ModInfo modInfo; // Stores the ID and version of our mod, and is sent to the modloader upon startup
 using namespace GlobalNamespace;
@@ -23,25 +22,29 @@ Configuration& getConfig() {
     return config;
 }
 
-MAKE_HOOK_MATCH(ComboController_HandleNoteWasCut, &ComboController::HandleNoteWasCut, void, ComboController* self, NoteController *noteController, ByRef<NoteCutInfo> info) {
-    ComboController_HandleNoteWasCut(self, noteController,info);
-    combo_count += 1;
-    // figure out how to check if this is a good cut. if it is good cut +1 if it is bad cut set 0
-    UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::ComboUIController*>().First()->HandleComboDidChange(combo_count);
-    }
 
+MAKE_HOOK_MATCH(ComboUIController_HandleComboDidChange, &ComboUIController::HandleComboDidChange, void, ComboUIController *self, int combo) {
+    ComboUIController_HandleComboDidChange(self, combo_count);
+    
+}
 
 MAKE_HOOK_MATCH(ComboUIController_HandleComboBreakingEventHappened, &GlobalNamespace::ComboUIController::HandleComboBreakingEventHappened, void, GlobalNamespace::ComboUIController* self) {
     ComboUIController_HandleComboBreakingEventHappened(self);
     combo_count = 0;
-    UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::ComboUIController*>().First()->HandleComboDidChange(combo_count);
 }
 
-MAKE_HOOK_MATCH(ComboUIController_HandleComboDidChange, &ComboUIController::HandleComboDidChange, void, ComboUIController *self, int combo) {
-    ComboUIController_HandleComboDidChange(self, combo_count);
-    // somehow change the "combo" text to "session combo"
-    // may be in a different hook
-}
+MAKE_HOOK_MATCH(ComboController_HandleNoteWasCut, &ComboController::HandleNoteWasCut, void, ComboController* self, NoteController *noteController, ByRef<NoteCutInfo> info) {
+    ComboController_HandleNoteWasCut(self, noteController,info);
+    
+    if (info ->get_allIsOK()){
+        combo_count += 1;
+    }
+    if (!info ->get_allIsOK()){
+        combo_count = 0;
+    }
+    }
+
+
 
 
 // reload combo count
@@ -74,11 +77,9 @@ extern "C" void load() {
 
     getLogger().info("Installing hooks...");
 
-    INSTALL_HOOK(getLogger(), ComboController_HandleNoteWasCut);
-    INSTALL_HOOK(getLogger(), ComboUIController_HandleComboBreakingEventHappened);
     INSTALL_HOOK(getLogger(), ComboUIController_HandleComboDidChange);
-    INSTALL_HOOK(getLogger(), MainMenuViewController_DidActivate);
-
+    INSTALL_HOOK(getLogger(), ComboUIController_HandleComboBreakingEventHappened);
+    INSTALL_HOOK(getLogger(), ComboController_HandleNoteWasCut);
     getLogger().info("Installed all hooks!");
 
 }
