@@ -1,4 +1,4 @@
-# Combo Keeper
+# SessionQombo
 
 Saves the combo from the previous song+ other fun stuffs with combo
 
