@@ -13,8 +13,9 @@ using namespace GlobalNamespace;
 using namespace UnityEngine;
 
 int combo_count;
+TMPro::TextMeshProUGUI *combo_text, *combo_counter;
 
-//TMPro::TextMeshProUGUI *Session_combo;
+
 
 
 
@@ -46,8 +47,7 @@ MAKE_HOOK_MATCH(ComboController_HandleNoteWasCut, &ComboController::HandleNoteWa
     if (info ->get_allIsOK()){
         combo_count += 1;
     }
-    auto combo_counter = QuestUI::ArrayUtil::Last(GameObject::FindObjectsOfType<TMPro::TextMeshProUGUI*>(), [](TMPro::TextMeshProUGUI* text){return text->get_name() == "comboText";});
-    combo_counter->SetText(std::to_string(combo_count));
+    combo_counter->SetText (std::to_string(combo_count));
     }
 
 MAKE_HOOK_MATCH(ComboUIController_Start, &ComboUIController::Start, void, GlobalNamespace::ComboUIController* self) {
@@ -55,7 +55,8 @@ MAKE_HOOK_MATCH(ComboUIController_Start, &ComboUIController::Start, void, Global
     // set the combo number value
     self->comboText->SetText(std::to_string(combo_count));
     // change the combo text
-    auto combo_text = QuestUI::ArrayUtil::Last(GameObject::FindObjectsOfType<TMPro::TextMeshProUGUI*>(), [](TMPro::TextMeshProUGUI* text){return text->get_name() == "ComboText";});
+    combo_text = QuestUI::ArrayUtil::Last(GameObject::FindObjectsOfType<TMPro::TextMeshProUGUI*>(), [](TMPro::TextMeshProUGUI* text){return text->get_name() == "ComboText";});
+    combo_counter = self->comboText;
     combo_text->SetText("Session Combo");
 }
 
