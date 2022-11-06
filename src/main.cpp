@@ -37,7 +37,7 @@ MAKE_HOOK_MATCH(ComboUIController_HandleComboBreakingEventHappened, &GlobalNames
     ComboUIController_HandleComboBreakingEventHappened(self);
     // handles breaking events
     combo_count = 0;
-    UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::ComboUIController*>().First()->HandleComboDidChange(combo_count);
+    self->comboText->SetText(std::to_string(combo_count));
 }
 
 MAKE_HOOK_MATCH(ComboController_HandleNoteWasCut, &ComboController::HandleNoteWasCut, void, ComboController* self, NoteController *noteController, ByRef<NoteCutInfo> info) {
@@ -46,7 +46,8 @@ MAKE_HOOK_MATCH(ComboController_HandleNoteWasCut, &ComboController::HandleNoteWa
     if (info ->get_allIsOK()){
         combo_count += 1;
     }
-    UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::ComboUIController*>().First()->HandleComboDidChange(combo_count);
+    auto combo_counter = QuestUI::ArrayUtil::Last(GameObject::FindObjectsOfType<TMPro::TextMeshProUGUI*>(), [](TMPro::TextMeshProUGUI* text){return text->get_name() == "comboText";});
+    combo_counter->SetText(std::to_string(combo_count));
     }
 
 MAKE_HOOK_MATCH(ComboUIController_Start, &ComboUIController::Start, void, GlobalNamespace::ComboUIController* self) {
