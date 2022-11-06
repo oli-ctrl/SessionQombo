@@ -1,6 +1,6 @@
 # SessionQombo
 
-Saves the combo from the previous song+ other fun stuffs with combo
+A mod for beat saber that makes the combo counter persist across level load, like in the game `In The Groove`
 
 ## Credits
 
