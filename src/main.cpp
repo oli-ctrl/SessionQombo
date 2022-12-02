@@ -16,9 +16,6 @@ int combo_count;
 TMPro::TextMeshProUGUI *combo_text, *combo_counter;
 
 
-
-
-
 // Loads the config from disk using our modInfo, then returns it for use
 // other config tools such as config-utils don't use this config, so it can be removed if those are in use
 Configuration& getConfig() {
@@ -30,8 +27,6 @@ Configuration& getConfig() {
 MAKE_HOOK_MATCH(ComboUIController_HandleComboDidChange, &ComboUIController::HandleComboDidChange, void, ComboUIController *self, int combo) {
     // handles combo changing and sets the value to the combo count
     ComboUIController_HandleComboDidChange(self, combo_count);
-
-
 }
 
 MAKE_HOOK_MATCH(ComboUIController_HandleComboBreakingEventHappened, &GlobalNamespace::ComboUIController::HandleComboBreakingEventHappened, void, GlobalNamespace::ComboUIController* self) {
@@ -59,9 +54,6 @@ MAKE_HOOK_MATCH(ComboUIController_Start, &ComboUIController::Start, void, Global
     combo_counter = self->comboText;
     combo_text->SetText("Session Combo");
 }
-
-
-
 
 
 // Returns a logger, useful for printing debug messages
